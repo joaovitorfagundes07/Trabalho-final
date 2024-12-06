@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página de Cadastro</title>
+    <title>Cadastro</title>
     <style>
-        /* Estilo semelhante ao exemplo anterior */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
@@ -57,25 +56,28 @@
             margin-top: 10px;
             font-size: 14px;
         }
+        #erro {
+            color: red;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="register-container">
         <h2>Cadastro</h2>
-        <form id="registerForm" action="/cadlog" method="post">
-            <label for="newUsername">Nome de Usuário</label>
-            <input type="text" id="usuarion" placeholder="Escolha um nome de usuário" required>
+        <form action="/cadastro" id="registerForm" method="post">
+            <label for="usuarion">Nome de Usuário</label>
+            <input type="text" id="usuarion" name="usuarion" placeholder="Escolha um nome de usuário">
 
-            <label for="newPassword">Senha</label>
-            <input type="password" id="usuarion" placeholder="Escolha uma senha" required>
+            <label for="senhanov">Senha</label>
+            <input type="password" id="senhanov" name="senhanov" placeholder="Escolha uma senha" >
 
             <button type="submit">Cadastrar</button>
         </form>
         <div class="message">
             <p>Já tem uma conta? <a href="login.html">Faça login</a></p>
         </div>
+        <p style="color: red;" id="erro"></p>
     </div>
-    
-    <script src="index.js"></script>
 </body>
 </html>

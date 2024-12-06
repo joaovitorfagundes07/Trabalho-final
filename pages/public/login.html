@@ -57,23 +57,34 @@
             font-size: 14px;
         }
     </style>
-</head>
-<body>
-    <div class="login-container">
-        <h2>Login</h2>
-        <form action="/login" method="POST">
-            <label for="username">Nome de Usuário</label>
-            <input type="text" id="usuario" name="usuario" placeholder="Digite seu nome de usuário" required>
-
-            <label for="password">Senha</label>
-            <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
-
-            <button type="submit">Entrar</button>
-        </form>
-        <div class="message">
-            <p>Ainda não tem uma conta? <a href="">Cadastre-se</a></p>
+    </head>
+    <body>
+        <div class="login-container">
+            <h2>Login</h2>
+            <form id="loginForm" action="/login"  method="post">
+                <label for="usuarion">Nome de Usuário</label>
+                <input type="text" id="usuarion" name="usuarion" placeholder="Nome de usuário" >
+    
+                <label for="senhanov">Senha</label>
+                <input type="password" id="senhanov" name="senhanov" placeholder="Senha" >
+    
+                <button type="submit">Entrar</button>
+            </form>
+            <div class="message">
+                <p>Ainda não tem uma conta? <a href="cadlog.html">Cadastre-se</a></p>
+            </div>
+            <p  style="color: red;" id="erro"></p>
         </div>
-    </div>
-    <script src="index.js"></script>
+    
+    </body>
+    </html>
+    <script>
+         
+        const erro = document.querySelector('#erro');
+        if (!usuarion || !senhanov) {
+    
+        erro.innerText = "Preencha todos os campos!";
+        }
+    </script>
 </body>
 </html>
