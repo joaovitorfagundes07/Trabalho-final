@@ -3,7 +3,7 @@ import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 
-const porta = process.env.PORT || 3000;
+const porta = 3000;
 const host = '0.0.0.0';
 const app = express();
 
@@ -364,9 +364,7 @@ app.post('/cadastro', cadlog);
 // Rota para autenticação
 app.post('/login', autenticar);
 
-app.get('/login.html', (req, res) => res.send('Hello from Vercel!'));
-
 // Iniciar o servidor
-app.listen(porta, () => {
-    console.log(`Servidor rodando na porta ${porta}`);
-  });
+app.listen(porta, host, () => {
+  console.log(`Servidor iniciado em http://${host}:${porta}`);
+});
