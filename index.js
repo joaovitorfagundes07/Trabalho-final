@@ -12,17 +12,20 @@ app.use(express.static(path.join(process.cwd(),'./pages/public')));
 app.use(cookieParser());
 
 app.use(session({
-  secret: 'MinhaChave3232c',
-  resave: false,                  
-  saveUninitialized: true,      
-  cookie: {
-      secure:false, 
-      httpOnly:true,
-      maxAge:1000 * 60 * 30 //tempo de 30 minutos para excluir a sessao
-  }
-}));
+    secret: 'MinhaChave3232c',
+    resave: false,                 
+    saveUninitialized: true,      
+    cookie: {
+      secure: false, 
+      httpOnly: true,
+      maxAge: 1000 * 60 * 30 // tempo de 30 minutos para excluir a sessão
+    }
+  })); 
 
-let usuarios = []; // Lista para armazenar os usuários cadastrados
+let usuarioscad = [] //lista de cadastrados
+let usuarios = []; // Lista para logins
+let mensagens = []; //lista de mensagens
+let usuariosLogados = []; // Lista de usuários que estão logados
 
 //Menu do sistema
 function menu(req, resp){
@@ -41,13 +44,13 @@ function menu(req, resp){
       <body>
         <nav class="navbar bg-body-tertiary">
             <div class="container-fluid">
-                <a class="navbar-brand" href="/cadastraraluno">cadastrar aluno</a>
+                <a class="navbar-brand" href="/cadusuario.html">cadastrar aluno</a>
             </div>
         </nav>
 
         <nav class="navbar bg-body-tertiary">
             <div class="container-fluid">
-                <a class="navbar-brand" href="/lista">Lista</a>
+                <a class="navbar-brand" href="/batepapo">Bate-Papo</a>
             </div>
             <div class="container-fluid">
                 <a class="navbar-brand" href="/logout">Sair</a>
@@ -64,6 +67,81 @@ function menu(req, resp){
   `);
 }
 
+//cadastrar usuario
+function cadusuario(req,resp){
+    const { nome, dataNascimento, nickname } = req.body;
+    let nicknameexistente = false;
+    if (!nome || !dataNascimento || !nickname) {
+        return resp.send(`
+            <html lang="pt-BR">
+                <head>
+                    <title>Menu</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+                </head>
+                <body>
+                    <div class="alert alert-dark" role="alert">
+                          Preencha os campos!!!
+                    </div>
+                    <div>
+                        <a href= "/cadusuario.html"  class="btn btn-outline-danger">tente novamente</a>
+                    </div>  
+                </body>
+            </html>
+        `);
+      }
+
+      for(let i=0;i<usuarioscad.length;i++){
+        if(usuarioscad[i].nickname===nickname){
+            nicknameexistente = true;
+            break;
+        }
+      }
+
+      if(nicknameexistente){
+        return resp.send(`
+            <html lang="pt-BR">
+                <head>
+                    <title>Menu</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+                </head>
+                <body>
+                    <div class="alert alert-dark" role="alert">
+                        Este apelido já está em uso!!!
+                    </div>
+                    <div>
+                        <a href= "/cadusuario.html"  class="btn btn-outline-danger">Voltar</a>
+                    </div>  
+                </body>
+            </html>
+        `);
+      }
+
+      usuarioscad.push({ nome, dataNascimento ,nickname });
+
+      const listaUsuarios = usuarioscad.map( u=> `<li>${u.nome} (${u.nickname})</li>`).join('');
+      const listaUsuario = usuarioscad.map(u => `<li class="list-group-item">${u.nome} (${u.nickname})</li>`).join('');
+      resp.send(`
+        <html lang="pt-BR">
+          <head>
+            <title>Usuário Cadastrado</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+          </head>
+          <body>
+            <div class="container mt-4">
+              <h1 class="mb-4">Usuário cadastrado com sucesso!</h1>
+              <ul class="list-group">
+                ${listaUsuario}
+              </ul>
+              <div class="mt-4">
+                <a href="/cadusuario.html" class="btn btn-primary">Cadastrar outro usuário</a>
+                <a href="/" class="btn btn-secondary">Menu</a>
+              </div>
+            </div>
+          </body>
+        </html>
+      `);
+}
+
 // Função de cadastro
 function cadlog(req, resp) {
     const { usuarion, senhanov } = req.body;
@@ -77,7 +155,7 @@ function cadlog(req, resp) {
                     </head>
                     <body>
                         <div class="alert alert-dark" role="alert">
-                          Preencha os campos!!!
+                          Preencha todos campos!!!
                         </div>
                         <div>
                         <a href= "/cadlog.html"  class="btn btn-outline-danger">tente novamente</a>
@@ -112,34 +190,36 @@ function cadlog(req, resp) {
     resp.redirect('/login.html');
 }
 
-// Função de autenticação
+// Função de autenticação de login
 function autenticar(req, resp) {
-  const { usuarion, senhanov } = req.body;
-
-  if (!usuarion || !senhanov) {
+    const { usuarion, senhanov } = req.body;
+  
+    if (!usuarion || !senhanov) {
       return resp.send(`
-            <html lang="pt-BR">
+           <html lang="pt-BR">
                     <head>
                     <title>Menu</title>
                     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
                     </head>
                     <body>
                         <div class="alert alert-dark" role="alert">
-                          Preencha os campos!!!
+                          Preencha todos campos!!!
                         </div>
                         <div>
-                        <a href= "/login.html"  class="btn btn-outline-danger">tente novamente</a>
+                        <a href= "/cadlog.html"  class="btn btn-outline-danger">tente novamente</a>
                         </div>  
                     </body>
       `);
-  }
-
-  const usuarioEncontrado = usuarios.find(u => u.usuario === usuarion && u.senha === senhanov);
+    }
   
-  if (usuarioEncontrado) {
-      req.session.usuariologado = usuarioEncontrado.usuario; // Armazena o usuário na sessão
-      resp.redirect('/');
-  } else {
+    const usuarioEncontrado = usuarios.find(u => u.usuario === usuarion && u.senha === senhanov);
+  
+    if (usuarioEncontrado) {
+      // Usuário encontrado e login válido
+      req.session.usuariologado = usuarioEncontrado.usuario;  // Salvando o usuário na sessão
+      usuariosLogados.push(usuarion); // Adiciona à lista de logados
+      resp.redirect('/'); // Redireciona para o menu
+    } else {
       resp.send(`
            <html lang="pt-BR">
                     <head>
@@ -148,15 +228,16 @@ function autenticar(req, resp) {
                     </head>
                     <body>
                         <div class="alert alert-dark" role="alert">
-                          Usuario ou senha invalida!!!
+                         Usuario ou senha invalida!!!
                         </div>
                         <div>
-                        <a href= "/login.html"  class="btn btn-outline-danger">tente novamente</a>
+                        <a href= "/cadlog.html"  class="btn btn-outline-danger">tente novamente</a>
                         </div>  
                     </body>
       `);
+    }
   }
-}
+  
 
 function autenticacao(req, resp, next) {
   if (req.session && req.session.usuariologado) {
@@ -171,14 +252,105 @@ function autenticacao(req, resp, next) {
 }
 
 app.get('/logout', (req, resp) => {
-  req.session.destroy(err => {
-      if (err) {
-          return resp.send('Erro ao sair!');
+    if (req.session && req.session.usuariologado) {
+      // Remove o usuário da lista de logados
+      const index = usuariosLogados.indexOf(req.session.usuariologado);
+      if (index > -1) {
+        usuariosLogados.splice(index, 1); // Remove o usuário da lista de logados
       }
-      resp.clearCookie('connect.sid');
-      resp.redirect('/login.html');
+      req.session.destroy(err => {
+        if (err) {
+          return resp.send('Erro ao sair!');
+        }
+        resp.clearCookie('connect.sid'); // Limpa o cookie da sessão
+        resp.redirect('/login.html'); // Redireciona para a página de login
+      });
+    } else {
+      resp.redirect('/login.html'); // Se o usuário não estiver logado
+    }
   });
+  
+
+app.get('/batepapo',autenticacao,(req,resp) => {
+    const listaMensagens = mensagens.map(msg => `  
+                <li class="list-group-item">
+                    <strong>${msg.nickname}</strong>: ${msg.texto} <br>
+                    <small class="text-muted">${msg.dataHora}</small>
+                </li>
+        `).join('');
+
+        resp.send(`
+        <html lang="pt-BR">
+        <head>
+            <title>Bate-Papo</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        </head>
+        <body>
+            <div class="container mt-4">
+                <h1 class="mb-4">Bate-Papo</h1>
+                <ul class="list-group mb-4">
+                    ${listaMensagens}
+                </ul>
+        <form action="/postarMensagem" method="POST">
+            <div class="mb-3">
+                <label for="nickname" class="form-label">Usuário</label>
+                <select id="nickname" name="nickname" class="form-select">
+                <option value="" disabled selected>Selecione um usuário</option>
+                    ${usuarioscad.map(u => `<option value="${u.nickname}">${u.nickname}</option>`).join('')}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="texto" class="form-label">Mensagem</label>
+                <input type="text" id="texto" name="texto" class="form-control">
+            </div>
+                 <button type="submit" class="btn btn-primary">Enviar</button>
+            </form>
+                <a href="/" class="btn btn-secondary mt-4">Menu</a>
+            </div>
+        </body>
+        </html>
+    `);
+
 });
+
+app.post('/postarMensagem', autenticacao, (req, resp) => {
+    const { nickname, texto } = req.body;
+
+    if (!nickname || !texto) {
+        return resp.send(`
+             <html lang="pt-BR">
+                    <head>
+                    <title>Menu</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+            </head>
+            <body>
+                        <div class="alert alert-dark" role="alert">
+                          Preencha os campos!!!
+                        </div>
+                        <div>
+                        <a href= "/batepapo"  class="btn btn-outline-danger">tente novamente</a>
+                        </div>  
+            </body>
+        `);
+    }
+
+    // Adicionar a mensagem à lista
+    const novaMensagem = {
+        nickname,
+        texto,
+        dataHora: new Date().toLocaleString("pt-BR", {
+            timeZone: "America/Sao_Paulo"
+        })
+    };
+    mensagens.push(novaMensagem);
+
+    // Redirecionar de volta para o bate-papo
+    resp.redirect('/batepapo');
+});
+
+
+app.post('/formulario',autenticacao,cadusuario);
+app.get('/formulario',autenticacao);
 
 // Rota para exibir o login
 app.get('/login', (req, resp) => {
