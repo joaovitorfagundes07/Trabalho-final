@@ -364,6 +364,8 @@ app.post('/cadastro', cadlog);
 // Rota para autenticação
 app.post('/login', autenticar);
 
+app.get('/login.html', (req, res) => res.send('Hello from Vercel!'));
+
 // Iniciar o servidor
 app.listen(porta, () => {
     console.log(`Servidor rodando na porta ${porta}`);
